@@ -1,5 +1,7 @@
+
 use serenity::prelude::*;
 use serenity::framework::standard::{StandardFramework};
+use chrono::{Utc, Duration};
 
 mod login;
 
@@ -12,6 +14,9 @@ use client::*;
 mod config;
 use config::*;
 
+mod messages;
+use messages::*;
+
 #[tokio::main]
 async fn main() {
     let framework = StandardFramework::new()
@@ -20,12 +25,19 @@ async fn main() {
 
     // Login with a bot token from the environment
     let token = login::load_bot_token().await.expect("could not load login token");
-    let intents = GatewayIntents::non_privileged() | GatewayIntents::MESSAGE_CONTENT;
+    let intents = GatewayIntents::non_privileged() | 
+                        GatewayIntents::GUILD_MESSAGES;
     let mut client = Client::builder(token, intents)
         .event_handler(Handler)
         .framework(framework)
         .await
         .expect("Error creating client");
+
+    let TEST_GUILD_ID = GuildId(1091225753284268092);
+    let TEST_CHANNEL_ID = ChannelId(1170843856145756210);
+    let AN_HOUR_AGO: Timestamp = (Utc::now() + Duration::hours(1)).into();
+    let controller = OldMessageController.new(client.cache_and_http);
+    dbg!(controller.get_old_messages());
 
     // start listening for events by starting a single shard
     if let Err(why) = client.start().await {
