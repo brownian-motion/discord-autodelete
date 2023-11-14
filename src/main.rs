@@ -43,7 +43,7 @@ async fn main() {
     dbg!(controller.get_old_messages(&TEST_GUILD_ID, &TEST_CHANNEL_ID, &AN_HOUR_AGO).await);
 
     // start listening for events by starting a single shard
-    if let Err(why) = client.start().await {
-        println!("An error occurred while running the client: {:?}", why);
-    }
+    // if let Err(why) = client.start().await {
+    //     println!("An error occurred while running the client: {:?}", why);
+    // }
 }
