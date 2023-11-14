@@ -40,7 +40,9 @@ async fn main() {
     let TEST_CHANNEL_ID = ChannelId(1170843856145756210);
     let AN_HOUR_AGO: Timestamp = (Utc::now() - Duration::hours(1)).into();
     let controller = OldMessageController::new(client.cache_and_http.clone());
-    dbg!(controller.get_old_messages(&TEST_GUILD_ID, &TEST_CHANNEL_ID, &AN_HOUR_AGO).await);
+    if let Ok(messages) = dbg!(controller.get_old_messages(&TEST_GUILD_ID, &TEST_CHANNEL_ID, &AN_HOUR_AGO).await) {
+        dbg!(controller.delete_old_messages(&TEST_GUILD_ID, &TEST_CHANNEL_ID, &messages).await);
+    }
 
     // start listening for events by starting a single shard
     // if let Err(why) = client.start().await {

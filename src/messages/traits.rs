@@ -10,5 +10,5 @@ pub trait OldMessageGetter {
 
 #[async_trait]
 pub trait OldMessageDeleter {
-	async fn delete_old_messages(&self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<Vec<MessageId>>;
+	async fn delete_old_messages(&self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<()>;
 }
