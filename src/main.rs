@@ -38,7 +38,7 @@ async fn main() {
 
     let TEST_GUILD_ID = GuildId(1091225753284268092);
     let TEST_CHANNEL_ID = ChannelId(1170843856145756210);
-    let AN_HOUR_AGO: Timestamp = (Utc::now() + Duration::hours(1)).into();
+    let AN_HOUR_AGO: Timestamp = (Utc::now() - Duration::hours(1)).into();
     let controller = OldMessageController::new(client.cache_and_http.clone());
     dbg!(controller.get_old_messages(&TEST_GUILD_ID, &TEST_CHANNEL_ID, &AN_HOUR_AGO).await);
 

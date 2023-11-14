@@ -26,7 +26,7 @@ impl From<serenity::Error> for Error {
 impl From<HttpError> for Error {
 	fn from(e: HttpError) -> Self {
 		if let HttpError::UnsuccessfulRequest(resp) = e {
-			match resp.status_code {
+			return match resp.status_code {
 				StatusCode::FORBIDDEN => Error::CannotFetchMessages(resp),
 				StatusCode::NOT_FOUND => Error::ChannelNotFoundError,
 				_ => Error::Http(HttpError::UnsuccessfulRequest(resp)),
