@@ -1,14 +1,42 @@
 use serenity::model::prelude::*;
 use chrono::{Duration, DateTime, Utc, TimeZone};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use std::path::{Path, PathBuf};
 
+#[derive(Debug)]
+pub enum Error {
+	FileNotFound(PathBuf),
+	NotFile(PathBuf),
+	CannotRead(std::io::Error),
+	Serde(serde_yaml::Error),
+}
+
+impl From<serde_yaml::Error> for Error {
+	fn from(e: serde_yaml::Error) -> Self {
+		Error::Serde(e)
+	}
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct Config {
+	pub schedules: Vec<DeleteSchedule>,
+}
+
+// DeleteSchedule represents the specifications for ONE channel.
+// A single guild may have many or none of these.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DeleteSchedule {
 	pub guild_id: GuildId,
 	pub channel_id: ChannelId,
 	#[serde(serialize_with = "duration_serialize", deserialize_with = "duration_deserialize")]
 	pub delete_older_than: Duration,
-	pub last_run: Option<DateTime<Utc>>,
+	pub last_run: Option<DateTime<Utc>>, // TODO: move this to some other cache, so they're saved seperately
+}
+
+impl DeleteSchedule {
+	pub fn oldest_permitted_message_time(&self) -> Timestamp {
+		(Utc::now() - self.delete_older_than).into()
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -58,6 +86,30 @@ pub struct DeleteSchedules {
 	pub schedules: Vec<DeleteSchedule>,
 }
 
+impl Config{
+	pub fn load_from_file(path: &Path) -> Result<Config, Error> {
+		use Error::*;
+		if !path.exists() {
+			return Err(FileNotFound(path.to_path_buf()))
+		}
+		if !path.is_file() {
+			return Err(NotFile(path.to_path_buf()))
+		}
+		match std::fs::read_to_string(path) {
+			Ok(s) => Self::load_from_yaml(&s),
+			Err(e) => Err(CannotRead(e)),
+		}
+	}
+
+	pub fn load_from_yaml(data: &str) -> Result<Config, Error> {
+		Ok(serde_yaml::from_str(data)?)
+	}
+
+	pub fn to_string(&self) -> Result<String, Error> {
+		Ok(serde_yaml::to_string(self)?)
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -72,7 +124,7 @@ schedules:
         days: 3
         ";
 
-		let parsed: DeleteSchedules = serde_yaml::from_str(&config).unwrap();
+		let parsed: DeleteSchedules = Config::load_from_yaml(config).unwrap();
 
 		let expected = DeleteSchedules {
 			schedules: vec![
@@ -112,7 +164,7 @@ schedules:
 			],
 		};
 
-		let actual: String = serde_yaml::to_string(&config).unwrap();
+		let actual: String = config.to_string().unwrap();
 
 		assert_eq!(expected, actual.trim());
 	}
@@ -130,9 +182,8 @@ schedules:
 			],
 		};
 
-		let serialized: String = serde_yaml::to_string(&config).unwrap();
-		let round_trip: DeleteSchedules = serde_yaml::from_str(&serialized).unwrap();
-
+		let serialized: String = config.to_string().unwrap();
+		let round_trip: DeleteSchedules = Config::load_from_yaml(&serialized).unwrap();
 
 		assert_eq!(config, round_trip);
 	}

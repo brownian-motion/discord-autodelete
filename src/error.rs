@@ -10,6 +10,7 @@ pub enum Error {
 	CannotDeleteMessages(ErrorResponse),
 	ChannelNotFoundError,
 	ServerNotFoundError,
+	Config(crate::config::Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -33,5 +34,11 @@ impl From<HttpError> for Error {
 			}
 		}
 		Error::Http(e)
+	}
+}
+
+impl From<crate::config::Error> for Error {
+	fn from(e: crate::config::Error) -> Self {
+		Error::Config(e)
 	}
 }

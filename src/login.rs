@@ -1,12 +1,9 @@
-
 use tokio::io::AsyncReadExt;
 use std::env;
 use tokio::fs::File;
+use std::path::Path;
 
-const DEFAULT_DISCORD_TOKEN_PATH: &'static str = "/app/discord-token";
-
-pub(crate) async fn load_bot_token() -> std::io::Result<String> {
-    let token_path = env::var("DISCORD_TOKEN_PATH").unwrap_or_else(|_| DEFAULT_DISCORD_TOKEN_PATH.to_string());
+pub(crate) async fn load_bot_token(token_path: &Path) -> std::io::Result<String> {
     let mut f = File::open(token_path).await?;
     let mut buffer = String::new();
     f.read_to_string(&mut buffer).await?;
