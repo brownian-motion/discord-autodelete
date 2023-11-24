@@ -8,8 +8,7 @@ use crate::Result;
 use futures::prelude::*;
 use super::*;
 use async_trait::async_trait;
-
-use traits::*;
+use super::traits::*;
 
 
 pub struct OldMessageController<H> {
@@ -24,13 +23,15 @@ impl<H> OldMessageController<H> where H: AsRef<CacheAndHttp> + Sync {
 
 #[async_trait]
 impl<H> OldMessageGetter for OldMessageController<H> where H: AsRef<CacheAndHttp> + Sync {
-	async fn get_old_messages(&self, server_id: &GuildId, channel_id: &ChannelId, sent_before: &Timestamp) -> Result<Vec<MessageId>> {
+	async fn get_old_messages(&self, request: GetOldMessageRequest) -> Result<Vec<MessageId>> {
+		//  server_id: &GuildId, channel_id: &ChannelId, sent_before: &Timestamp
 		// for now , assume the IDs can all fit in memory
-		let mut stream = channel_id.messages_iter(self.http.as_ref()).boxed();
+		let mut stream = request.channel_id.messages_iter(self.http.as_ref()).boxed();
 		let mut ids = vec![];
 		while let Some(res) = stream.next().await {
 			match res {
-				Ok(m) => if m.timestamp.timestamp() < sent_before.timestamp() { 
+				// Timestamp doesn't implement `<`, so we compare the equivalent Unix timestamp instead
+				Ok(m) => if m.timestamp.timestamp() < request.sent_before.timestamp() { 
 					ids.push(m.id);
 				},
 				Err(e) => return Err(e.into()),

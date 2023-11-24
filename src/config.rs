@@ -80,12 +80,6 @@ fn duration_deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Duration, D::
 	SerializedDuration::deserialize(d).map(|dur| dur.into())
 }
 
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct DeleteSchedules {
-	pub schedules: Vec<DeleteSchedule>,
-}
-
 impl Config{
 	pub fn load_from_file(path: &Path) -> Result<Config, Error> {
 		use Error::*;
@@ -124,9 +118,9 @@ schedules:
         days: 3
         ";
 
-		let parsed: DeleteSchedules = Config::load_from_yaml(config).unwrap();
+		let parsed: Config = Config::load_from_yaml(config).unwrap();
 
-		let expected = DeleteSchedules {
+		let expected = Config {
 			schedules: vec![
 				DeleteSchedule{
 					guild_id: GuildId(3063131093886218891u64),
@@ -153,7 +147,7 @@ schedules:
   last_run: 2013-10-19T12:40:00Z
         ".trim();
 
-		let config = DeleteSchedules {
+		let config = Config {
 			schedules: vec![
 				DeleteSchedule{
 					guild_id: GuildId(3063131093886218891u64),
@@ -171,7 +165,7 @@ schedules:
 
 	#[test]
 	fn round_trip() {
-		let config = DeleteSchedules {
+		let config = Config {
 			schedules: vec![
 				DeleteSchedule{
 					guild_id: GuildId(3063131093886218891u64),
@@ -183,7 +177,7 @@ schedules:
 		};
 
 		let serialized: String = config.to_string().unwrap();
-		let round_trip: DeleteSchedules = Config::load_from_yaml(&serialized).unwrap();
+		let round_trip: Config = Config::load_from_yaml(&serialized).unwrap();
 
 		assert_eq!(config, round_trip);
 	}
