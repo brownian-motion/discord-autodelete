@@ -7,6 +7,8 @@ pub use traits::*;
 mod controller;
 pub use controller::*;
 
+pub mod stubs;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GetOldMessageRequest {
 	pub guild_id: GuildId,
