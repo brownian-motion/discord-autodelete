@@ -9,6 +9,7 @@ pub enum Error {
 	NotFile(PathBuf),
 	CannotRead(std::io::Error),
 	Serde(serde_yaml::Error),
+	CannotSave(std::io::Error),
 }
 
 impl From<serde_yaml::Error> for Error {
@@ -20,6 +21,12 @@ impl From<serde_yaml::Error> for Error {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Config {
 	pub schedules: Vec<DeleteSchedule>,
+}
+
+impl Config {
+	pub fn empty() -> Self {
+		Config{schedules: vec![]}
+	}
 }
 
 // DeleteSchedule represents the specifications for ONE channel.
@@ -101,6 +108,10 @@ impl Config{
 
 	pub fn to_string(&self) -> Result<String, Error> {
 		Ok(serde_yaml::to_string(self)?)
+	}
+
+	pub fn save_to_file(&self, path: &Path) -> Result<(), Error> {
+		std::fs::write(path, self.to_string()?).map_err(|e| Error::CannotSave(e))
 	}
 }
 

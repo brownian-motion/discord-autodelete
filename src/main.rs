@@ -1,8 +1,5 @@
 use serenity::prelude::*;
 use serenity::framework::standard::{StandardFramework};
-
-use chrono::{Duration};
-use serenity::model::id::*;
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -15,7 +12,7 @@ mod client;
 use client::*;
 
 mod config;
-use config::*;
+use config::{Config, Error as ConfigError};
 
 mod messages;
 use messages::*;
@@ -28,10 +25,10 @@ use deleter::*;
 #[derive(Parser,Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-    #[arg(short, long, env = "DISCORD_BOT_TOKEN_PATH", default_value = "/app/discord-bot-token")]
+    #[arg(short, long, env = "DISCORD_BOT_TOKEN_PATH", default_value = "/app/config/discord-bot-token.txt")]
     discord_bot_token_path: PathBuf,
 
-    #[arg(short, long, env = "CONFIG_PATH", default_value = "/app/config.yml")]
+    #[arg(short, long, env = "CONFIG_PATH", default_value = "/app/config/config.yml")]
     config_path: PathBuf,
 }
 
@@ -53,7 +50,7 @@ async fn main() {
         .await
         .expect("Error creating client");
 
-    let config = test_config();
+    let config = load_config(&args).expect("could not load config file");
     delete_old_messages(&client, &config).await;
 
     // start listening for events by starting a single shard
@@ -70,15 +67,15 @@ async fn delete_old_messages(client: &Client, config: &Config) {
     delete_routine.delete_old_messages(config).await;
 }
 
-fn test_config() -> Config {
-    Config {
-        schedules: vec![
-            DeleteSchedule {
-                guild_id: GuildId(1091225753284268092),
-                channel_id: ChannelId(1170843856145756210),
-                delete_older_than: Duration::hours(1),
-                last_run: None,
-            },
-        ]
+fn load_config(args: &Args) -> Result<Config> {
+    match Config::load_from_file(&args.config_path) {
+        // bootstrap a new config file if none exists at the target address
+        Err(ConfigError::FileNotFound(_)) => {
+            println!("Config file does not exist, creating an empty one...");
+            let c = Config::empty();
+            c.save_to_file(&args.config_path)?;
+            Ok(c)
+        },
+        res => Ok(res?),
     }
 }

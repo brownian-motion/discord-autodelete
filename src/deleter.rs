@@ -20,7 +20,7 @@ impl<G,D> DeleteRoutine<G,D> where G: OldMessageGetter, D: OldMessageDeleter {
 	            channel_id: schedule.channel_id,
 	            sent_before: cutoff_time,
 	        };
-	        println!("Fetching messages in channel {:?} older than {} hours", schedule.channel_id, schedule.delete_older_than.num_hours());
+	        println!("Fetching messages in channel {:?} older than {}h {}m", schedule.channel_id, schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60);
 	        let messages = match self.getter.get_old_messages(request).await {
 	            Ok(messages) => messages,
 	            Err(e) => {
