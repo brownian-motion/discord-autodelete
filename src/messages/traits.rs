@@ -1,5 +1,5 @@
 use serenity::model::prelude::*;
-use serenity::model::timestamp::Timestamp;
+
 use crate::Result;
 use async_trait::async_trait;
 use super::GetOldMessageRequest;

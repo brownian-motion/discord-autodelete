@@ -1,8 +1,8 @@
 use crate::Result;
-use futures::prelude::*;
+
 use super::*;
 use async_trait::async_trait;
-use super::traits::*;
+
 
 // An OldMessageGetter that always returns the same response when asked to read or delete
 struct SimpleOldMessageGetterStub(Box<dyn Sync + Fn(GetOldMessageRequest) -> Result<Vec<MessageId>>>);

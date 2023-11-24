@@ -1,7 +1,7 @@
 use serenity::prelude::*;
 use serenity::framework::standard::{StandardFramework};
-use serenity::model::Timestamp;
-use chrono::{Utc, Duration};
+
+use chrono::{Duration};
 use serenity::model::id::*;
 use clap::Parser;
 use std::path::PathBuf;
