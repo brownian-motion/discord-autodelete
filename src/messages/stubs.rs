@@ -1,14 +1,12 @@
-use crate::Result;
-
 use super::*;
 use async_trait::async_trait;
 
 
 // An OldMessageGetter that always returns the same response when asked to read or delete
-struct SimpleOldMessageGetterStub(Box<dyn Sync + Fn(GetOldMessageRequest) -> Result<Vec<MessageId>>>);
+struct SimpleOldMessageGetterStub(Box<dyn Sync + Fn(GetOldMessageRequest) -> Result<Vec<MessageId>, GetError>>);
 
 pub fn getter_stub<F>(f: F) -> impl OldMessageGetter
-	where F: Fn(GetOldMessageRequest) -> Result<Vec<MessageId>> + 'static + Sync
+	where F: Fn(GetOldMessageRequest) -> Result<Vec<MessageId>, GetError> + 'static + Sync
 {
 	SimpleOldMessageGetterStub(Box::new(f))
 }
@@ -20,17 +18,17 @@ pub fn getter_noop() -> impl OldMessageGetter
 
 #[async_trait]
 impl OldMessageGetter for SimpleOldMessageGetterStub {
-	async fn get_old_messages(&self, request: GetOldMessageRequest) -> Result<Vec<MessageId>> {
+	async fn get_old_messages(&self, request: GetOldMessageRequest) -> Result<Vec<MessageId>, GetError> {
 		self.0(request)
 	}
 }
 
 // An OldMessageController that always returns the same response when asked to read or delete
-struct SimpleOldMessageDeleterStub(Box<dyn Send + Sync + Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()>>);
+struct SimpleOldMessageDeleterStub(Box<dyn Send + Sync + Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<(), DeleteError>>);
 
 
 pub fn deleter_stub<F>(f: F) -> impl OldMessageDeleter
-	where F: Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()> + 'static + Sync + Send
+	where F: Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<(), DeleteError> + 'static + Sync + Send
 {
 	SimpleOldMessageDeleterStub(Box::new(f))
 }
@@ -42,7 +40,7 @@ pub fn deleter_noop() -> impl OldMessageDeleter
 
 #[async_trait]
 impl OldMessageDeleter for SimpleOldMessageDeleterStub{
-	async fn delete_old_messages(&mut self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<()>{
+	async fn delete_old_messages(&mut self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<(), DeleteError>{
 		self.0(server_id, channel_id, messages)
 	}
 }

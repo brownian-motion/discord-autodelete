@@ -12,6 +12,9 @@ pub mod stubs;
 mod dry_run;
 pub use dry_run::*;
 
+mod error;
+pub use error::*;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GetOldMessageRequest {
 	pub guild_id: GuildId,

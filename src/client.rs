@@ -1,5 +1,3 @@
-
-
 use serenity::async_trait;
 use serenity::prelude::*;
 use serenity::model::channel::Message;
