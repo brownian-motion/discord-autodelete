@@ -31,7 +31,7 @@ impl<H> OldMessageGetter for OldMessageController<H> where H: AsRef<CacheAndHttp
 		while let Some(res) = stream.next().await {
 			match res {
 				// Timestamp doesn't implement `<`, so we compare the equivalent Unix timestamp instead
-				Ok(m) => if m.timestamp.timestamp() < request.sent_before.timestamp() { 
+				Ok(m) => if !m.pinned && m.timestamp.timestamp() < request.sent_before.timestamp() { 
 					ids.push(m.id);
 				},
 				Err(e) => return Err(e.into()),
