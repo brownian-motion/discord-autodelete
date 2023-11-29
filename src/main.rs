@@ -30,6 +30,9 @@ pub struct Args {
 
     #[arg(short, long, env = "CONFIG_PATH", default_value = "/app/config/config.yml")]
     config_path: PathBuf,
+
+    #[arg(long, action)]
+    dry_run: bool,
 }
 
 #[tokio::main]
@@ -51,7 +54,7 @@ async fn main() {
         .expect("Error creating client");
 
     let config = load_config(&args).expect("could not load config file");
-    delete_old_messages(&client, &config).await;
+    delete_old_messages(&client, &config, &args).await;
 
     // start listening for events by starting a single shard
     // if let Err(why) = client.start().await {
@@ -59,10 +62,20 @@ async fn main() {
     // }
 }
 
-async fn delete_old_messages(client: &Client, config: &Config) {
-    let delete_routine = DeleteRoutine {
+fn get_deleter(client: &Client, args: &Args) -> Box<dyn OldMessageDeleter + Send + Sync> {
+    if args.dry_run {
+        Box::new(DryRunDeleter::new(std::io::stdout()))
+    } else {
+        Box::new(OldMessageController::new(client.cache_and_http.clone()))
+    }
+}
+
+async fn delete_old_messages(client: &Client, config: &Config, args: &Args) {
+    let deleter = get_deleter(client, args);
+
+    let mut delete_routine = DeleteRoutine {
         getter: OldMessageController::new(client.cache_and_http.clone()),
-        deleter: OldMessageController::new(client.cache_and_http.clone()),
+        deleter: deleter,
     };
     delete_routine.delete_old_messages(config).await;
 }

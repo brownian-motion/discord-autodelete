@@ -9,6 +9,9 @@ pub use controller::*;
 
 pub mod stubs;
 
+mod dry_run;
+pub use dry_run::*;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct GetOldMessageRequest {
 	pub guild_id: GuildId,

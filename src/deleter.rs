@@ -10,7 +10,7 @@ pub struct DeleteRoutine<G,D> {
 }
 
 impl<G,D> DeleteRoutine<G,D> where G: OldMessageGetter, D: OldMessageDeleter {
-	pub async fn delete_old_messages(&self, config: &Config) {
+	pub async fn delete_old_messages(&mut self, config: &Config) {
 	    println!("Deleting messages for {} schedules", config.schedules.len());
 	    for schedule in &config.schedules {
 	        // TODO: just pass the schedule instead

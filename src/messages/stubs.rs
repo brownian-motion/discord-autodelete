@@ -26,11 +26,11 @@ impl OldMessageGetter for SimpleOldMessageGetterStub {
 }
 
 // An OldMessageController that always returns the same response when asked to read or delete
-struct SimpleOldMessageDeleterStub(Box<dyn Sync + Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()>>);
+struct SimpleOldMessageDeleterStub(Box<dyn Send + Sync + Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()>>);
 
 
 pub fn deleter_stub<F>(f: F) -> impl OldMessageDeleter
-	where F: Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()> + 'static + Sync
+	where F: Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<()> + 'static + Sync + Send
 {
 	SimpleOldMessageDeleterStub(Box::new(f))
 }
@@ -42,7 +42,7 @@ pub fn deleter_noop() -> impl OldMessageDeleter
 
 #[async_trait]
 impl OldMessageDeleter for SimpleOldMessageDeleterStub{
-	async fn delete_old_messages(&self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<()>{
+	async fn delete_old_messages(&mut self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<()>{
 		self.0(server_id, channel_id, messages)
 	}
 }
