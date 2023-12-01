@@ -1,8 +1,7 @@
-
-use serenity::model::prelude::*;
 use super::traits::*;
-use crate::messages::DeleteError;
+use super::error::DeleteError;
 use async_trait::async_trait;
+use crate::types::*;
 
 pub struct DryRunDeleter<W> {
 	printer:  W,
@@ -16,8 +15,8 @@ impl<W> DryRunDeleter<W> where W: std::io::Write {
 
 #[async_trait]
 impl<W> OldMessageDeleter for DryRunDeleter<W> where W: std::io::Write + Sync + Send {
-	async fn delete_old_messages(&mut self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<(), DeleteError>{
-		writeln!(self.printer, "Deleting {} messages for channel {:?} in server {:?}: {:?}", messages.len(), channel_id, server_id, messages).expect("could not print messages to stdout");
+	async fn delete_old_messages(&mut self, request: DeleteMessagesRequest) -> Result<(), DeleteError>{
+		writeln!(self.printer, "Deleting {} messages for {} in {}: {:?}", request.ids.len(), request.channel, request.guild, request.ids).expect("could not print messages to stdout");
 		Ok(())
 	}
 }

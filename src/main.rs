@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 mod login;
 
-mod error;
+pub mod error;
 pub use error::*;
 
 mod client;
@@ -19,6 +19,9 @@ use messages::*;
 
 mod deleter;
 use deleter::*; 
+
+pub mod types;
+use types::*;
 
 // const DEFAULT_DISCORD_TOKEN_PATH: &'static str = "/app/discord-token";
 
@@ -40,7 +43,7 @@ async fn main() {
     let args = Args::parse();
 
     let framework = StandardFramework::new()
-        .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
+        // .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
         .group(&GENERAL_GROUP);
 
     // Login with a bot token from the environment
@@ -66,7 +69,7 @@ fn get_deleter(client: &Client, args: &Args) -> Box<dyn OldMessageDeleter + Send
     if args.dry_run {
         Box::new(DryRunDeleter::new(std::io::stdout()))
     } else {
-        Box::new(OldMessageController::new(client.cache_and_http.clone()))
+        Box::new(OldMessageController::new(client.http.clone()))
     }
 }
 
@@ -74,8 +77,9 @@ async fn delete_old_messages(client: &Client, config: &Config, args: &Args) {
     let deleter = get_deleter(client, args);
 
     let mut delete_routine = DeleteRoutine {
-        getter: OldMessageController::new(client.cache_and_http.clone()),
+        getter: OldMessageController::new(client.http.clone()),
         deleter: deleter,
+        namer: HttpNamer::new(client.http.clone()),
     };
     delete_routine.delete_old_messages(config).await;
 }

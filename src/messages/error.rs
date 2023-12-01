@@ -1,5 +1,5 @@
 use serenity::http::HttpError;
-use serenity::http::error::ErrorResponse;
+use serenity::http::ErrorResponse;
 use serenity::http::StatusCode;
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub enum GetError {
 impl From<serenity::Error> for GetError {
 	fn from(e: serenity::Error) -> Self {
 		if let serenity::Error::Http(http_err) = e {
-			return (*http_err).into()
+			return http_err.into()
 		}
 		GetError::Framework(e)
 	}
@@ -46,7 +46,7 @@ pub enum DeleteError {
 impl From<serenity::Error> for DeleteError {
 	fn from(e: serenity::Error) -> Self {
 		if let serenity::Error::Http(http_err) = e {
-			return (*http_err).into()
+			return http_err.into()
 		}
 		DeleteError::Framework(e)
 	}

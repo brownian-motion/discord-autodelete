@@ -1,5 +1,8 @@
-use super::*;
+use crate::types::*;
+use super::traits::*;
+use super::error::*;
 use async_trait::async_trait;
+use serenity::model::id::MessageId;
 
 
 // An OldMessageGetter that always returns the same response when asked to read or delete
@@ -24,24 +27,24 @@ impl OldMessageGetter for SimpleOldMessageGetterStub {
 }
 
 // An OldMessageController that always returns the same response when asked to read or delete
-struct SimpleOldMessageDeleterStub(Box<dyn Send + Sync + Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<(), DeleteError>>);
+struct SimpleOldMessageDeleterStub(Box<dyn Send + Sync + Fn(DeleteMessagesRequest) -> Result<(), DeleteError>>);
 
 
 pub fn deleter_stub<F>(f: F) -> impl OldMessageDeleter
-	where F: Fn(&GuildId, &ChannelId, &[MessageId]) -> Result<(), DeleteError> + 'static + Sync + Send
+	where F: Fn(DeleteMessagesRequest) -> Result<(), DeleteError> + 'static + Sync + Send
 {
 	SimpleOldMessageDeleterStub(Box::new(f))
 }
 
 pub fn deleter_noop() -> impl OldMessageDeleter
 {
-	deleter_stub(|_,_,_| Ok(()))
+	deleter_stub(|_| Ok(()))
 }
 
 #[async_trait]
 impl OldMessageDeleter for SimpleOldMessageDeleterStub{
-	async fn delete_old_messages(&mut self, server_id: &GuildId, channel_id: &ChannelId, messages: &[MessageId]) -> Result<(), DeleteError>{
-		self.0(server_id, channel_id, messages)
+	async fn delete_old_messages(&mut self, request: DeleteMessagesRequest) -> Result<(), DeleteError>{
+		self.0(request)
 	}
 }
 

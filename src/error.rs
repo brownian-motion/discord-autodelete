@@ -1,6 +1,3 @@
-use serenity::http::HttpError;
-use serenity::http::error::ErrorResponse;
-use serenity::http::StatusCode;
 use crate::messages::{GetError, DeleteError};
 use crate::config::Error as ConfigError;
 

@@ -15,9 +15,5 @@ pub use dry_run::*;
 mod error;
 pub use error::*;
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub struct GetOldMessageRequest {
-	pub guild_id: GuildId,
-	pub channel_id: ChannelId,
-	pub sent_before: Timestamp,
-}
+mod namer;
+pub use namer::*;
