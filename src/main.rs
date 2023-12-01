@@ -2,6 +2,7 @@ use serenity::prelude::*;
 use serenity::framework::standard::{StandardFramework};
 use clap::Parser;
 use std::path::PathBuf;
+use tokio::time::{sleep, Duration};
 
 mod login;
 
@@ -36,6 +37,9 @@ pub struct Args {
 
     #[arg(long, action)]
     dry_run: bool,
+
+    #[arg(long, default_value_t = 2)]
+    poll_interval_minutes: u64,
 }
 
 #[tokio::main]
@@ -56,8 +60,16 @@ async fn main() {
         .await
         .expect("Error creating client");
 
-    let config = load_config(&args).expect("could not load config file");
-    delete_old_messages(&client, &config, &args).await;
+    loop {
+        println!("reloading config...");
+        let config = load_config(&args).expect("could not load config file");
+
+        println!("deleting...");
+        delete_old_messages(&client, &config, &args).await;
+
+        println!("sleeping...");
+        sleep(Duration::from_secs(args.poll_interval_minutes * 60)).await;
+    }
 
     // start listening for events by starting a single shard
     // if let Err(why) = client.start().await {
