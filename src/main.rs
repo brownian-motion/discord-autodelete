@@ -38,7 +38,7 @@ pub struct Args {
     #[arg(long, action)]
     dry_run: bool,
 
-    #[arg(long, default_value_t = 2)]
+    #[arg(long, env = "POLL_INTERVAL_MINUTES", default_value_t = 2)]
     poll_interval_minutes: u64,
 }
 

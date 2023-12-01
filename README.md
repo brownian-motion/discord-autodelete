@@ -15,6 +15,7 @@ This is the implementation of a bot that deletes posts from configured channels.
 - [ ] Running
   - [ ] Add a `/command` to trigger this manually from discord
   - [ ] Add a `/command` to change the configuration manually from discord
+  - [x] Have it poll periodically in a loop
   - [ ] Use `docker` and `cron` to schedule this to run periodically
 - [ ] Nice-to-haves
   - [ ] Write a short script to make it easier to create a new self-hosted instance of this bot
