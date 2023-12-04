@@ -23,7 +23,8 @@ RUN cargo build --release
 
 #########################
 
-FROM rust:1.74
+# FROM rust:1.74-slim-bookworm
+FROM debian:bookworm-slim
 COPY --from=builder /discord-autodelete/target/release/discord-autodelete /bin/discord-autodelete
 WORKDIR /app
 CMD [ "/bin/discord-autodelete" ]
