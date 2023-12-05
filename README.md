@@ -79,16 +79,16 @@ Your config file will be created for you if it does not already exist, and you c
 Config files should have the following format:
 
 ```yaml
-schedules:
-# delete everything from channel <#1641798796715016192> that gets older than 2 minutes:
-- guild_id: '2417843429083125945'
-  channel_id: '1641798796715016192'
-  delete_older_than:
-    minutes: 2
-# delete everything from channel <#637575874339525219> that gets older than a day and a half:
-- guild_id: '5034342453932171936'
-  channel_id: '637575874339525219'
-  delete_older_than:
-    hours: 12
-    days: 1
+guilds:
+- id: '2417843429083125945'
+  channels:
+  # delete everything from channel <#1641798796715016192> that gets older than 2 minutes:
+  - id: '1641798796715016192'
+    delete_older_than:
+      minutes: 2
+  # delete everything from channel <#637575874339525219> that gets older than a day and a half:
+  - id: '637575874339525219'
+    delete_older_than:
+      days: 1
+      hours: 12
 ```

@@ -2,7 +2,7 @@ use crate::types::*;
 use super::traits::*;
 use super::error::*;
 use async_trait::async_trait;
-use serenity::model::id::MessageId;
+use serenity::model::id::{MessageId, GuildId, ChannelId};
 
 
 // An OldMessageGetter that always returns the same response when asked to read or delete
@@ -48,3 +48,29 @@ impl OldMessageDeleter for SimpleOldMessageDeleterStub{
 	}
 }
 
+struct SimpleNamerStub {
+	channel_namer: Box<dyn Send + Sync + Fn(ChannelId) -> String>,
+	guild_namer: Box<dyn Send + Sync + Fn(GuildId) -> String>,
+}
+
+pub fn namer_stub<F1, F2>(channel_namer: F1, guild_namer: F2) -> impl Namer 
+	where F1: 'static + Send + Sync + Fn(ChannelId) -> String,
+		  F2: 'static + Send + Sync + Fn(GuildId) -> String,
+{
+	SimpleNamerStub{ channel_namer: Box::new(channel_namer), guild_namer: Box::new(guild_namer) }
+}
+
+#[async_trait]
+impl Namer for SimpleNamerStub {
+	async fn name_guild(&self, guild_id: GuildId) -> String {
+		(self.guild_namer)(guild_id)
+	}
+
+	async fn name_channel(&self, channel_id: ChannelId) -> String {
+		(self.channel_namer)(channel_id)
+	}
+}
+
+pub fn dummy_namer() -> impl Namer {
+	namer_stub(|_| String::new(), |_| String::new())
+}

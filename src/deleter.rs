@@ -10,9 +10,9 @@ pub struct DeleteRoutine<G,D,N> {
 
 impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter, N: Namer {
 	pub async fn delete_old_messages(&mut self, config: &Config) {
-	    println!("Deleting messages for {} schedules", config.schedules.len());
-	    for schedule in &config.schedules {
-	        // TODO: just pass the schedule instead
+		let num_schedules = config.delete_schedules().count();
+	    println!("Deleting messages for {} channels in {} guilds", num_schedules, config.guild_configs.len());
+	    for schedule in config.delete_schedules() {
 	        let cutoff_time = schedule.oldest_permitted_message_time();
 	        let guild_name = self.namer.name_guild(schedule.guild_id).await;
 	        let channel_name = self.namer.name_channel(schedule.channel_id).await;
@@ -43,7 +43,7 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	        };
 	    }
 
-	    println!("Finished deleting from {} channels", config.schedules.len());
+	    println!("Finished deleting from {} channels", config.guild_configs.len());
 	}
 }
 
@@ -51,14 +51,19 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 mod tests {
 	use super::*;
 	use crate::messages::stubs::*;
+	use crate::types::*;
+	use serenity::model::id::*;
+	use crate::config::*;
+	use chrono::Duration;
 
 	#[tokio::test]
 	async fn nothing_fetched_when_schedule_is_empty() {
-		let controller = DeleteRoutine {
+		let mut controller = DeleteRoutine {
 			getter: getter_stub(|_| panic!("Should not read!")),
-			deleter: deleter_stub(|_,_,_| panic!("Should not delete!")),
+			deleter: deleter_stub(|_| panic!("Should not delete!")),
+			namer: dummy_namer(),
 		};
-		let config = Config{schedules: vec![]};
+		let config = Config{guild_configs: vec![]};
 		controller.delete_old_messages(&config).await; // will panic if either stub is used
 	}
 
@@ -66,22 +71,26 @@ mod tests {
 	async fn nothing_deleted_when_no_messages() {
 		let guild =  3063131093886218891u64;
 		let channel = 8274993703618613416u64;
-		let controller = DeleteRoutine {
+		let mut controller = DeleteRoutine {
 			getter: getter_stub(move |req| {
-				assert_eq!(req.channel_id, ChannelId(channel));
-				assert_eq!(req.guild_id, GuildId(guild));
+				assert_eq!(req.channel.id, ChannelId::new(channel));
+				assert_eq!(req.guild.id, GuildId::new(guild));
 				Ok(vec![])
 			}),
-			deleter: deleter_stub(|_,_,_| panic!("Should not delete!")),
+			deleter: deleter_stub(|_| panic!("Should not delete!")),
+			namer: dummy_namer(),
 		};
 		let config = Config {
-			schedules: vec![
+			guild_configs: vec![
 				// just a dummy value whose contents will be ignored
-				DeleteSchedule{
-					guild_id: GuildId(guild),
-					channel_id: ChannelId(channel),
-					delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
-					last_run: Some(Utc.with_ymd_and_hms(2013,10,19,12,40,0).unwrap()),
+				GuildConfig{
+					guild_id: GuildId::new(guild),
+					channel_configs: vec![
+						ChannelConfig{
+							channel_id: ChannelId::new(channel),
+							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+						},
+					],
 				},
 			],
 		};
@@ -93,28 +102,32 @@ mod tests {
 		let guild =  3063131093886218891u64;
 		let channel = 8274993703618613416u64;
 		let message = 5902119689978300948u64;
-		let controller = DeleteRoutine {
+		let mut controller = DeleteRoutine {
 			getter: getter_stub(move |req| {
-				assert_eq!(req.channel_id, ChannelId(channel));
-				assert_eq!(req.guild_id, GuildId(guild));
-				Ok(vec![MessageId(message)])
+				assert_eq!(req.channel.id, ChannelId::new(channel));
+				assert_eq!(req.guild.id, GuildId::new(guild));
+				Ok(vec![MessageId::new(message)])
 			}),
-			deleter: deleter_stub(move |&gid, &cid, messages| {
-				assert_eq!(gid, GuildId(guild));
-				assert_eq!(cid, ChannelId(channel));
-				assert_eq!(1, messages.len());
-				assert_eq!(MessageId(message), messages[0]);
+			deleter: deleter_stub(move |req| {
+				assert_eq!(req.guild.id, GuildId::new(guild));
+				assert_eq!(req.channel.id, ChannelId::new(channel));
+				assert_eq!(1, req.ids.len());
+				assert_eq!(MessageId::new(message), req.ids[0]);
 				Ok(())
 			}),
+			namer: dummy_namer(),
 		};
 		let config = Config {
-			schedules: vec![
+			guild_configs: vec![
 				// just a dummy value whose contents will be ignored
-				DeleteSchedule{
-					guild_id: GuildId(guild),
-					channel_id: ChannelId(channel),
-					delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
-					last_run: Some(Utc.with_ymd_and_hms(2013,10,19,12,40,0).unwrap()),
+				GuildConfig{
+					guild_id: GuildId::new(guild),
+					channel_configs: vec![
+						ChannelConfig{
+							channel_id: ChannelId::new(channel),
+							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+						},
+					],
 				},
 			],
 		};
