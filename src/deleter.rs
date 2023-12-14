@@ -51,9 +51,9 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 mod tests {
 	use super::*;
 	use crate::messages::stubs::*;
-	use crate::types::*;
+	
 	use serenity::model::id::*;
-	use crate::config::*;
+	
 	use chrono::Duration;
 
 	#[tokio::test]

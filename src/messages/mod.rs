@@ -1,6 +1,3 @@
-use serenity::model::prelude::*;
-use serenity::model::timestamp::Timestamp;
-
 mod traits;
 pub use traits::*;
 

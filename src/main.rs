@@ -22,7 +22,7 @@ mod deleter;
 use deleter::*; 
 
 pub mod types;
-use types::*;
+
 
 // const DEFAULT_DISCORD_TOKEN_PATH: &'static str = "/app/discord-token";
 
