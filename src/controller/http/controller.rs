@@ -17,6 +17,7 @@ impl<H> OldMessageController<H> where H: AsRef<Http> + Sync {
 
 impl GetOldMessageRequest {
 	fn matches(&self, message: &Message) -> bool {
+		// println!("\t\t\tConsidering message: {:?}", message);
 		message.channel_id == self.channel.id
 			&& !message.pinned	
 			// Timestamp doesn't implement `<`, so we compare the equivalent Unix timestamp instead

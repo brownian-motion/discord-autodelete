@@ -52,8 +52,9 @@ async fn main() {
 
     // Login with a bot token from the environment
     let token = login::load_bot_token(&args.discord_bot_token_path).await.expect("could not load login token");
-    let intents = GatewayIntents::non_privileged() | 
-                        GatewayIntents::GUILD_MESSAGES;
+    let intents = GatewayIntents::empty() 
+                        | GatewayIntents::GUILD_MESSAGES 
+                        | GatewayIntents::MESSAGE_CONTENT /* to know if it has an attachment */;
     let client = Client::builder(token, intents)
         .event_handler(Handler)
         .framework(framework)

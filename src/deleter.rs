@@ -24,16 +24,16 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	            sent_before: cutoff_time,
 	            just_images: schedule.just_images,
 	        };
-	        println!("Fetching messages from {} in {} older than {}h {}m", &channel, &guild, schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60);
+	        println!("\tFetching messages from {} in {} older than {}h {}m", &channel, &guild, schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60);
 	        let messages = match self.getter.get_old_messages(request).await {
 	            Ok(messages) => messages,
 	            Err(e) => {
-	                eprintln!("Error loading messages from {} in {}: {:?}", &channel, &guild, e);
+	                eprintln!("\t\tError loading messages from {} in {}: {:?}", &channel, &guild, e);
 	                continue;
 	            },
 	        };
 	        if messages.is_empty() {
-	            println!("Nothing to delete for {} in {}", &channel, &guild);
+	            println!("\t\tNothing to delete for {} in {}", &channel, &guild);
 	            continue;
 	        }
 	        let num_messages = messages.len();
@@ -44,7 +44,7 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	        };
 	    }
 
-	    println!("Finished deleting from {} channels", config.guild_configs.len());
+	    println!("\tFinished");
 	}
 }
 
