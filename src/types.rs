@@ -1,8 +1,9 @@
 pub use serenity::model::id::{GuildId, ChannelId, MessageId};
 pub use serenity::model::timestamp::Timestamp;
 use std::fmt::{Display, Debug, Formatter, Result};
+use serde::Serialize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct NamedGuild {
 	pub id: GuildId,
 	pub name: String,
@@ -14,7 +15,7 @@ impl Display for NamedGuild {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct NamedChannel {
 	pub id: ChannelId,
 	pub name: String,
@@ -26,7 +27,7 @@ impl Display for NamedChannel {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct GetOldMessageRequest {
 	pub guild: NamedGuild,
 	pub channel: NamedChannel,
@@ -34,7 +35,7 @@ pub struct GetOldMessageRequest {
 	pub just_images: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct DeleteMessagesRequest {
 	pub guild: NamedGuild,
 	pub channel: NamedChannel,

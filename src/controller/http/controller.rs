@@ -4,6 +4,7 @@ use futures::prelude::*;
 use crate::controller::{traits::*, error::*};
 use async_trait::async_trait;
 use crate::types::*;
+use log::trace;
 
 pub struct OldMessageController<H> {
 	http:  H,
@@ -17,7 +18,7 @@ impl<H> OldMessageController<H> where H: AsRef<Http> + Sync {
 
 impl GetOldMessageRequest {
 	fn matches(&self, message: &Message) -> bool {
-		// println!("\t\t\tConsidering message: {:?}", message);
+		trace!(channel_id = message.channel_id.get(), guild_id = message.guild_id.map(|id| id.get()), message_id = message.id.get(); "Considering message");
 		message.channel_id == self.channel.id
 			&& !message.pinned	
 			// Timestamp doesn't implement `<`, so we compare the equivalent Unix timestamp instead

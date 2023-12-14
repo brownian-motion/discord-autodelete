@@ -1,6 +1,7 @@
 use crate::controller::*;
 use crate::config::*;
 use crate::types::*;
+use log::*;
 
 pub struct DeleteRoutine<G,D,N> {
 	pub getter: G,
@@ -11,7 +12,7 @@ pub struct DeleteRoutine<G,D,N> {
 impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter, N: Namer {
 	pub async fn delete_old_messages(&mut self, config: &Config) {
 		let num_schedules = config.delete_schedules().count();
-	    println!("Deleting messages for {} channels in {} guilds", num_schedules, config.guild_configs.len());
+	    info!(num_channels = num_schedules, num_guilds = config.guild_configs.len(); "Deleting messages");
 	    for schedule in config.delete_schedules() {
 	        let cutoff_time = schedule.oldest_permitted_message_time();
 	        let guild_name = self.namer.name_guild(schedule.guild_id).await;
@@ -24,27 +25,27 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	            sent_before: cutoff_time,
 	            just_images: schedule.just_images,
 	        };
-	        println!("\tFetching messages from {} in {} older than {}h {}m", &channel, &guild, schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60);
+	        debug!(channel = as_serde!(&channel), guild = as_serde!(&guild), age = &format!("{}h {}m", schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60); "Fetching messages");
 	        let messages = match self.getter.get_old_messages(request).await {
 	            Ok(messages) => messages,
 	            Err(e) => {
-	                eprintln!("\t\tError loading messages from {} in {}: {:?}", &channel, &guild, e);
+	                error!(error = as_debug!(e), channel = as_serde!(&channel), guild = as_serde!(&guild); "Error loading messages");
 	                continue;
 	            },
 	        };
 	        if messages.is_empty() {
-	            println!("\t\tNothing to delete for {} in {}", &channel, &guild);
+	            debug!(channel = as_serde!(&channel), guild = as_serde!(&guild); "Nothing to delete");
 	            continue;
 	        }
 	        let num_messages = messages.len();
 	        let request = DeleteMessagesRequest { guild: guild.clone(), channel: channel.clone(), ids: messages };
 	        match self.deleter.delete_old_messages(request).await {
-	            Ok(_) => println!("Deleted {} old messages from {} in {}", num_messages, &channel, &guild),
-	            Err(e) => eprintln!("Error deleting {} messages from {} in {}: {:?}", num_messages, &channel, &guild, e),
+	            Ok(_) => info!(channel = as_serde!(&channel), guild = as_serde!(&guild), num_messages = num_messages; "Deleted old messages"),
+	            Err(e) => error!(channel = as_serde!(&channel), guild = as_serde!(&guild), error = as_debug!(e), num_messages = num_messages; "Error deleting messages"),
 	        };
 	    }
 
-	    println!("\tFinished");
+	    info!("Finished");
 	}
 }
 

@@ -3,6 +3,8 @@ use serenity::framework::standard::{StandardFramework};
 use clap::Parser;
 use std::path::PathBuf;
 use tokio::time::{sleep, Duration};
+use structured_logger::{Builder as LogBuilder, async_json::new_writer};
+use log::*;
 
 mod login;
 
@@ -23,9 +25,6 @@ use deleter::*;
 
 pub mod types;
 
-
-// const DEFAULT_DISCORD_TOKEN_PATH: &'static str = "/app/discord-token";
-
 #[derive(Parser,Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
@@ -40,11 +39,19 @@ pub struct Args {
 
     #[arg(long, env = "POLL_INTERVAL_MINUTES", default_value_t = 2)]
     poll_interval_minutes: u64,
+
+    #[arg(long, env = "RUST_LOG", default_value = "info")]
+    log_level: String,
 }
 
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
+
+    LogBuilder::with_level(&args.log_level)
+        .with_default_writer(new_writer(tokio::io::sink())) // I don't want to see printouts from serenity
+        .with_target_writer("discord_autodelete*", new_writer(tokio::io::stdout()))
+        .init();
 
     let framework = StandardFramework::new()
         // .configure(|c| c.prefix("~")) // set the bot's prefix to "~"
@@ -62,13 +69,13 @@ async fn main() {
         .expect("Error creating client");
 
     loop {
-        println!("reloading config...");
+        info!("reloading config");
         let config = load_config(&args).expect("could not load config file");
 
-        println!("deleting...");
+        info!("deleting");
         delete_old_messages(&client, &config, &args).await;
 
-        println!("sleeping...");
+        info!("sleeping");
         sleep(Duration::from_secs(args.poll_interval_minutes * 60)).await;
     }
 
@@ -80,7 +87,7 @@ async fn main() {
 
 fn get_deleter(client: &Client, args: &Args) -> Box<dyn OldMessageDeleter + Send + Sync> {
     if args.dry_run {
-        Box::new(DryRunDeleter::new(std::io::stdout()))
+        Box::new(DryRunDeleter::new())
     } else {
         Box::new(OldMessageController::new(client.http.clone()))
     }
@@ -101,7 +108,7 @@ fn load_config(args: &Args) -> Result<Config> {
     match Config::load_from_file(&args.config_path) {
         // bootstrap a new config file if none exists at the target address
         Err(ConfigError::FileNotFound(_)) => {
-            println!("Config file does not exist, creating an empty one...");
+            warn!("Config file does not exist, creating an empty one...");
             let c = Config::empty();
             c.save_to_file(&args.config_path)?;
             Ok(c)
