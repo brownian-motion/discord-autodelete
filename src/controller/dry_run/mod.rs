@@ -3,18 +3,18 @@ use super::error::DeleteError;
 use async_trait::async_trait;
 use crate::types::*;
 
-pub struct DryRunDeleter<W> {
+pub struct Deleter<W> {
 	printer:  W,
 }
 
-impl<W> DryRunDeleter<W> where W: std::io::Write {
+impl<W> Deleter<W> where W: std::io::Write {
 	pub fn new(printer: W) -> Self {
-		DryRunDeleter{ printer }
+		Deleter{ printer }
 	}
 }
 
 #[async_trait]
-impl<W> OldMessageDeleter for DryRunDeleter<W> where W: std::io::Write + Sync + Send {
+impl<W> OldMessageDeleter for Deleter<W> where W: std::io::Write + Sync + Send {
 	async fn delete_old_messages(&mut self, request: DeleteMessagesRequest) -> Result<(), DeleteError>{
 		writeln!(self.printer, "Deleting {} messages from {} in {}: {:?}", request.ids.len(), request.channel, request.guild, request.ids).expect("could not print messages to stdout");
 		Ok(())

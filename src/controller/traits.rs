@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use super::{GetError, DeleteError};
+use super::error::*;
 use crate::types::*;
 use serenity::model::id::{GuildId, ChannelId, MessageId};
 

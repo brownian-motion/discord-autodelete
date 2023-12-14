@@ -1,4 +1,4 @@
-use crate::messages::*;
+use crate::controller::*;
 use crate::config::*;
 use crate::types::*;
 
@@ -50,9 +50,8 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 #[cfg(test)]
 mod tests {
 	use super::*;
-	use crate::messages::stubs::*;
-	
 	use serenity::model::id::*;
+	use crate::controller::stub::*;
 	
 	use chrono::Duration;
 

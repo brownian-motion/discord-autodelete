@@ -15,8 +15,8 @@ use client::*;
 mod config;
 use config::{Config, Error as ConfigError};
 
-mod messages;
-use messages::*;
+mod controller;
+use controller::{*, http::*, dry_run::Deleter as DryRunDeleter};
 
 mod deleter;
 use deleter::*; 

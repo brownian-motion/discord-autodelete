@@ -1,7 +1,7 @@
 use serenity::model::id::{ChannelId, GuildId};
 use serenity::http::Http;
 use futures::prelude::*;
-use super::*;
+use crate::controller::{traits::*, error::*};
 use async_trait::async_trait;
 
 pub struct HttpNamer<H> {

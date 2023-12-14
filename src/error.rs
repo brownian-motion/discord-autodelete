@@ -1,4 +1,4 @@
-use crate::messages::{GetError, DeleteError};
+use crate::controller::error::*;
 use crate::config::Error as ConfigError;
 
 #[derive(Debug)]
