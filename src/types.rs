@@ -1,5 +1,5 @@
-use serenity::model::id::{GuildId, ChannelId, MessageId};
-use serenity::model::timestamp::Timestamp;
+pub use serenity::model::id::{GuildId, ChannelId, MessageId};
+pub use serenity::model::timestamp::Timestamp;
 use std::fmt::{Display, Debug, Formatter, Result};
 
 #[derive(Clone, Debug)]
@@ -31,6 +31,7 @@ pub struct GetOldMessageRequest {
 	pub guild: NamedGuild,
 	pub channel: NamedChannel,
 	pub sent_before: Timestamp,
+	pub just_images: bool,
 }
 
 #[derive(Clone, Debug)]

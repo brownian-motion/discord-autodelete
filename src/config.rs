@@ -2,6 +2,7 @@ use serenity::model::prelude::*;
 use chrono::{Duration, Utc};
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use std::path::{Path, PathBuf};
+use std::ops::Not;
 
 #[derive(Debug)]
 pub enum Error {
@@ -50,6 +51,7 @@ impl GuildConfig {
 			guild_id: self.guild_id,
 			channel_id: c.channel_id,
 			delete_older_than: c.delete_older_than,
+			just_images: c.just_images,
 		})
 	}
 }
@@ -62,6 +64,8 @@ pub struct ChannelConfig {
 	pub channel_id: ChannelId,
 	#[serde(serialize_with = "duration_serialize", deserialize_with = "duration_deserialize")]
 	pub delete_older_than: Duration,
+	#[serde(default, skip_serializing_if = "Not::not")]
+	pub just_images: bool,
 }
 
 // DeleteSchedule represents the full specification for ONE channel.
@@ -73,6 +77,8 @@ pub struct DeleteSchedule {
 	pub channel_id: ChannelId,
 	#[serde(serialize_with = "duration_serialize", deserialize_with = "duration_deserialize")]
 	pub delete_older_than: Duration,
+	#[serde(default, skip_serializing_if = "Not::not")]
+	pub just_images: bool,
 }
 
 impl DeleteSchedule {
@@ -173,8 +179,41 @@ guilds:
 					guild_id: GuildId::new(3063131093886218891u64),
 					channel_configs: vec![
 						ChannelConfig{
+							just_images: false,
 							channel_id: ChannelId::new(8274993703618613416u64),
 							delete_older_than: Duration::days(3),
+						},
+					],
+				},
+			],
+		};
+
+		assert_eq!(expected, parsed);
+	}
+
+	#[test]
+	fn deserializes_with_just_images_setting() {
+		let config = "
+guilds:
+- id: 3063131093886218891
+  channels:
+  - id: 8274993703618613416
+    just_images: true
+    delete_older_than:
+      days: 3
+        ";
+
+		let parsed: Config = Config::load_from_yaml(config).unwrap();
+
+		let expected = Config {
+			guild_configs: vec![
+				GuildConfig{
+					guild_id: GuildId::new(3063131093886218891u64),
+					channel_configs: vec![
+						ChannelConfig{
+							channel_id: ChannelId::new(8274993703618613416u64),
+							delete_older_than: Duration::days(3),
+							just_images: true,
 						},
 					],
 				},
@@ -205,6 +244,7 @@ guilds:
 						ChannelConfig{
 							channel_id: ChannelId::new(8274993703618613416u64),
 							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+							just_images: false,
 						},
 					],
 				},
@@ -226,6 +266,7 @@ guilds:
 						ChannelConfig{
 							channel_id: ChannelId::new(8274993703618613416u64),
 							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+							just_images: false,
 						},
 					],
 				},
@@ -260,6 +301,7 @@ guilds:
 				guild_id: GuildId::new(3063131093886218891u64),
 				channel_id: ChannelId::new(8274993703618613416u64),
 				delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+				just_images: false,
 			}
 		];
 
@@ -281,6 +323,7 @@ guilds:
       hours: 5
       minutes: 7
   - id: '8690347484951214837'
+    just_images: true
     delete_older_than:
       hours: 1
       minutes: 30
@@ -298,16 +341,19 @@ guilds:
 				guild_id: GuildId::new(3063131093886218891u64),
 				channel_id: ChannelId::new(8274993703618613416u64),
 				delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+				just_images: false,
 			},
 			DeleteSchedule {
 				guild_id: GuildId::new(3063131093886218891u64),
 				channel_id: ChannelId::new(8690347484951214837),
 				delete_older_than: Duration::minutes(30) + Duration::hours(1),
+				just_images: true,
 			},
 			DeleteSchedule {
 				guild_id: GuildId::new(8690347484951214837),
 				channel_id: ChannelId::new(8159836460754921542),
 				delete_older_than: Duration::days(2),
+				just_images: false,
 			},
 		];
 

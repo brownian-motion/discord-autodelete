@@ -22,6 +22,7 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	            guild: guild.clone(),
 	            channel: channel.clone(),
 	            sent_before: cutoff_time,
+	            just_images: schedule.just_images,
 	        };
 	        println!("Fetching messages from {} in {} older than {}h {}m", &channel, &guild, schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60);
 	        let messages = match self.getter.get_old_messages(request).await {
@@ -88,6 +89,7 @@ mod tests {
 						ChannelConfig{
 							channel_id: ChannelId::new(channel),
 							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+							just_images: false,
 						},
 					],
 				},
@@ -125,6 +127,7 @@ mod tests {
 						ChannelConfig{
 							channel_id: ChannelId::new(channel),
 							delete_older_than: Duration::days(3) + Duration::minutes(7) + Duration::hours(5),
+							just_images: false,
 						},
 					],
 				},
