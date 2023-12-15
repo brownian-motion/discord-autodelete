@@ -12,8 +12,9 @@ This is useful for things like `#venting` channels, selfies, and anything sensit
 - [x] Deleting
   - [x] Be able to fetch a list of posts in a channel older than the configured timeout
   - [x] Be able to delete all posts in a channel older than the configured timeout
-  - [x] "Dry run" mode to list what WOULD be deleted without deleting anything
+  - [x] "Dry run" (read-only) mode to list what WOULD be deleted without deleting anything
   - [x] Don't delete pinned messages
+  - [x] Be able to only delete messages with images/video, leaving text-only messages intact
 - [ ] Running
   - [ ] Add a `/command` to trigger this manually from discord
   - [ ] Add a `/command` to change the configuration manually from discord
@@ -86,8 +87,9 @@ guilds:
   - id: '1641798796715016192'
     delete_older_than:
       minutes: 2
-  # delete everything from channel <#637575874339525219> that gets older than a day and a half:
+  # delete every message with images/videos from channel <#637575874339525219> that gets older than a day and a half:
   - id: '637575874339525219'
+    just_images: true
     delete_older_than:
       days: 1
       hours: 12
