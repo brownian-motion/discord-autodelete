@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use tokio::time::{sleep, Duration};
 use structured_logger::{Builder as LogBuilder, async_json::new_writer};
 use log::*;
+use serde::Serialize;
 
 mod login;
 
@@ -25,7 +26,7 @@ use deleter::*;
 
 pub mod types;
 
-#[derive(Parser,Debug)]
+#[derive(Parser,Debug,Serialize)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
     #[arg(short, long, env = "DISCORD_BOT_TOKEN_PATH", default_value = "/app/config/discord-bot-token.txt")]
@@ -68,6 +69,8 @@ async fn main() {
         .await
         .expect("Error creating client");
 
+    info!(args = as_serde!(&args); "starting");
+
     loop {
         info!("reloading config");
         let config = load_config(&args).expect("could not load config file");
@@ -75,7 +78,7 @@ async fn main() {
         info!("deleting");
         delete_old_messages(&client, &config, &args).await;
 
-        info!("sleeping");
+        info!(num_minutes = args.poll_interval_minutes; "sleeping");
         sleep(Duration::from_secs(args.poll_interval_minutes * 60)).await;
     }
 

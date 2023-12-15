@@ -25,7 +25,7 @@ impl<G,D,N> DeleteRoutine<G,D,N> where G: OldMessageGetter, D: OldMessageDeleter
 	            sent_before: cutoff_time,
 	            just_images: schedule.just_images,
 	        };
-	        debug!(channel = as_serde!(&channel), guild = as_serde!(&guild), age = &format!("{}h {}m", schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60); "Fetching messages");
+	        debug!(channel = as_serde!(&channel), guild = as_serde!(&guild), max_age = &format!("{}h {}m", schedule.delete_older_than.num_hours(), schedule.delete_older_than.num_minutes() % 60); "Fetching messages");
 	        let messages = match self.getter.get_old_messages(request).await {
 	            Ok(messages) => messages,
 	            Err(e) => {

@@ -1,7 +1,7 @@
 use serenity::http::HttpError;
 use serenity::http::ErrorResponse;
 use serenity::http::StatusCode;
-use serde::Serialize;
+
 
 #[derive(Debug)]
 pub enum GetError {
