@@ -1,11 +1,11 @@
-use serenity::prelude::*;
-use serenity::framework::standard::{StandardFramework};
 use clap::Parser;
-use std::path::PathBuf;
-use tokio::time::{sleep, Duration};
-use structured_logger::{Builder as LogBuilder, async_json::new_writer};
 use log::*;
 use serde::Serialize;
+use serenity::framework::standard::StandardFramework;
+use serenity::prelude::*;
+use std::path::PathBuf;
+use structured_logger::{async_json::new_writer, Builder as LogBuilder};
+use tokio::time::{sleep, Duration};
 
 mod login;
 
@@ -19,20 +19,30 @@ mod config;
 use config::{Config, Error as ConfigError};
 
 mod controller;
-use controller::{*, http::*, dry_run::Deleter as DryRunDeleter};
+use controller::{dry_run::Deleter as DryRunDeleter, http::*, *};
 
 mod deleter;
-use deleter::*; 
+use deleter::*;
 
 pub mod types;
 
-#[derive(Parser,Debug,Serialize)]
+#[derive(Parser, Debug, Serialize)]
 #[command(author, version, about, long_about = None)]
 pub struct Args {
-    #[arg(short, long, env = "DISCORD_BOT_TOKEN_PATH", default_value = "/app/config/discord-bot-token.txt")]
+    #[arg(
+        short,
+        long,
+        env = "DISCORD_BOT_TOKEN_PATH",
+        default_value = "/app/config/discord-bot-token.txt"
+    )]
     discord_bot_token_path: PathBuf,
 
-    #[arg(short, long, env = "CONFIG_PATH", default_value = "/app/config/config.yml")]
+    #[arg(
+        short,
+        long,
+        env = "CONFIG_PATH",
+        default_value = "/app/config/config.yml"
+    )]
     config_path: PathBuf,
 
     #[arg(long, action)]
@@ -59,9 +69,11 @@ async fn main() {
         .group(&GENERAL_GROUP);
 
     // Login with a bot token from the environment
-    let token = login::load_bot_token(&args.discord_bot_token_path).await.expect("could not load login token");
-    let intents = GatewayIntents::empty() 
-                        | GatewayIntents::GUILD_MESSAGES 
+    let token = login::load_bot_token(&args.discord_bot_token_path)
+        .await
+        .expect("could not load login token");
+    let intents = GatewayIntents::empty()
+                        | GatewayIntents::GUILD_MESSAGES
                         | GatewayIntents::MESSAGE_CONTENT /* to know if it has an attachment */;
     let client = Client::builder(token, intents)
         .event_handler(Handler)
@@ -115,7 +127,7 @@ fn load_config(args: &Args) -> Result<Config> {
             let c = Config::empty();
             c.save_to_file(&args.config_path)?;
             Ok(c)
-        },
+        }
         res => Ok(res?),
     }
 }
