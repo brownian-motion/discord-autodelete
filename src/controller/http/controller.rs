@@ -57,6 +57,34 @@ where
     }
 }
 
+impl<H> OldMessageController<H>
+where
+    H: AsRef<Http> + Sync + Send,
+{
+    async fn delete_single_message(
+        &mut self,
+        channel_id: ChannelId,
+        message_id: MessageId,
+    ) -> Result<(), DeleteError> {
+        // for now , assume the IDs can all fit in memory
+        let http = self.http.as_ref();
+        let _ = channel_id.delete_message(http, message_id).await?;
+        drop(http);
+        Ok(())
+    }
+    async fn delete_bulk_messages(
+        &mut self,
+        channel_id: ChannelId,
+        message_ids: &[MessageId],
+    ) -> Result<(), DeleteError> {
+        // for now , assume the IDs can all fit in memory
+        let http = self.http.as_ref();
+        let _ = channel_id.delete_messages(http, message_ids).await?;
+        drop(http);
+        Ok(())
+    }
+}
+
 #[async_trait]
 impl<H> OldMessageDeleter for OldMessageController<H>
 where
@@ -66,15 +94,20 @@ where
         &mut self,
         request: DeleteMessagesRequest,
     ) -> Result<(), DeleteError> {
-        // for now , assume the IDs can all fit in memory
-        let http = self.http.as_ref();
-        let _ = request
-            .channel
-            .id
-            .delete_messages(http, &request.ids)
-            .await?;
-        drop(http);
-        Ok(())
+        // first try using bulk deletion
+        if self
+            .delete_bulk_messages(request.channel.id, &request.ids)
+            .await
+            .is_ok()
+        {
+            return Ok(());
+        }
+        // if that doesn't work, try single-message deletion
+        for message_id in request.ids {
+            self.delete_single_message(request.channel.id, message_id)
+                .await?
+        }
+        return Ok(());
     }
 }
 
