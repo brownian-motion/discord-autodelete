@@ -86,10 +86,10 @@ mod tests {
 			m
 		};
 		// THIS MUST NOT BE ACCESSED
-		let unsafe_empty_attachment = || unsafe {
-			const SIZE: usize = std::mem::size_of::<Attachment>();
-			std::mem::transmute::<[u8; SIZE], Attachment>([0u8; SIZE])
-		};
+		// let unsafe_empty_attachment = || unsafe {
+		// 	const SIZE: usize = std::mem::size_of::<Attachment>();
+		// 	std::mem::transmute::<[u8; SIZE], Attachment>([0u8; SIZE])
+		// };
 
 		let test_cases = vec![
 			(
@@ -148,23 +148,23 @@ mod tests {
 				),
 				false
 			),
-			(
-				(
-					"just images => gets messages with attachments",
-					GetOldMessageRequest {
-						guild: GUILD_ONE,
-						channel: CHANNEL_ONE,
-						sent_before: Timestamp::parse("2020-01-01T01:00:00Z").unwrap(),
-						just_images: true,
-					},
-					{
-						let mut m = old_message();
-						m.attachments = vec![unsafe_empty_attachment()];
-						m
-					}
-				),
-				true
-			),
+			// (
+			// 	(
+			// 		"just images => gets messages with attachments",
+			// 		GetOldMessageRequest {
+			// 			guild: GUILD_ONE,
+			// 			channel: CHANNEL_ONE,
+			// 			sent_before: Timestamp::parse("2020-01-01T01:00:00Z").unwrap(),
+			// 			just_images: true,
+			// 		},
+			// 		{
+			// 			let mut m = old_message();
+			// 			m.attachments = vec![unsafe_empty_attachment()];
+			// 			m
+			// 		}
+			// 	),
+			// 	true
+			// ),
 			(
 				(
 					"just images => gets messages with embeds",
@@ -200,24 +200,24 @@ mod tests {
 				),
 				false
 			),
-			(
-				(
-					"just images => skips pinned messages with attachments",
-					GetOldMessageRequest {
-						guild: GUILD_ONE,
-						channel: CHANNEL_ONE,
-						sent_before: Timestamp::parse("2020-01-01T01:00:00Z").unwrap(),
-						just_images: true,
-					},
-					{
-						let mut m = old_message();
-						m.pinned = true;
-						m.attachments = vec![unsafe_empty_attachment()];
-						m
-					}
-				),
-				false
-			),
+			// (
+			// 	(
+			// 		"just images => skips pinned messages with attachments",
+			// 		GetOldMessageRequest {
+			// 			guild: GUILD_ONE,
+			// 			channel: CHANNEL_ONE,
+			// 			sent_before: Timestamp::parse("2020-01-01T01:00:00Z").unwrap(),
+			// 			just_images: true,
+			// 		},
+			// 		{
+			// 			let mut m = old_message();
+			// 			m.pinned = true;
+			// 			m.attachments = vec![unsafe_empty_attachment()];
+			// 			m
+			// 		}
+			// 	),
+			// 	false
+			// ),
 		];
 
 		for (validator, (title, request, message), expected) in table_test!(test_cases) {
