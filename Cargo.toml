@@ -3,6 +3,7 @@ name = "discord-autodelete"
 version = "0.1.0"
 edition = "2021"
 author = "JJ Brown"
+license = "MIT OR AGPL-3.0-or-later"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
