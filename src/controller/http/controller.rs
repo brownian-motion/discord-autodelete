@@ -68,8 +68,8 @@ where
     ) -> Result<(), DeleteError> {
         // for now , assume the IDs can all fit in memory
         let http = self.http.as_ref();
-        let _ = channel_id.delete_message(http, message_id).await?;
-        drop(http);
+        channel_id.delete_message(http, message_id).await?;
+        let _ = http;
         Ok(())
     }
     async fn delete_bulk_messages(
@@ -79,8 +79,8 @@ where
     ) -> Result<(), DeleteError> {
         // for now , assume the IDs can all fit in memory
         let http = self.http.as_ref();
-        let _ = channel_id.delete_messages(http, message_ids).await?;
-        drop(http);
+        channel_id.delete_messages(http, message_ids).await?;
+        let _ = http;
         Ok(())
     }
 }
@@ -114,7 +114,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::types::*;
-    use serenity::model::channel::{Attachment, Message};
+    use serenity::model::channel::Message;
     use table_test::*;
 
     const GUILD_ONE: NamedGuild = NamedGuild {
@@ -135,12 +135,12 @@ mod tests {
             let mut m: Message = Default::default();
             m.guild_id = Some(GUILD_ONE.id);
             m.channel_id = CHANNEL_ONE.id;
-            m.timestamp = old_time.clone();
+            m.timestamp = old_time;
             m
         };
         let new_message = || {
             let mut m = old_message();
-            m.timestamp = new_time.clone();
+            m.timestamp = new_time;
             m
         };
         // THIS MUST NOT BE ACCESSED

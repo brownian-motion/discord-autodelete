@@ -32,7 +32,7 @@ impl Config {
         }
     }
 
-    pub fn delete_schedules<'a>(&'a self) -> impl Iterator<Item = DeleteSchedule> + 'a {
+    pub fn delete_schedules(&self) -> impl Iterator<Item = DeleteSchedule> + '_ {
         self.guild_configs.iter().flat_map(|c| c.delete_schedules())
     }
 }
@@ -48,7 +48,7 @@ pub struct GuildConfig {
 }
 
 impl GuildConfig {
-    pub fn delete_schedules<'a>(&'a self) -> impl Iterator<Item = DeleteSchedule> + 'a {
+    pub fn delete_schedules(&self) -> impl Iterator<Item = DeleteSchedule> + '_ {
         self.channel_configs.iter().map(|c| DeleteSchedule {
             guild_id: self.guild_id,
             channel_id: c.channel_id,
@@ -121,11 +121,11 @@ impl From<Duration> for SerializedDuration {
     }
 }
 
-impl Into<Duration> for SerializedDuration {
-    fn into(self) -> Duration {
-        Duration::days(self.days as i64)
-            + Duration::hours(self.hours as i64)
-            + Duration::minutes(self.minutes as i64)
+impl From<SerializedDuration> for Duration {
+    fn from(dur: SerializedDuration) -> Duration {
+        Duration::days(dur.days as i64)
+            + Duration::hours(dur.hours as i64)
+            + Duration::minutes(dur.minutes as i64)
     }
 }
 
@@ -161,7 +161,7 @@ impl Config {
     }
 
     pub fn save_to_file(&self, path: &Path) -> Result<(), Error> {
-        std::fs::write(path, self.to_string()?).map_err(|e| Error::CannotSave(e))
+        std::fs::write(path, self.to_string()?).map_err(Error::CannotSave)
     }
 }
 

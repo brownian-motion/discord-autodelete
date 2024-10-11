@@ -47,6 +47,11 @@ cargo run -- --config-path="./config.yaml" --discord-bot-token-path="./token.txt
 
 For details, run `cargo run -- --help`.
 
+### Using Nix:
+```sh
+nix run -- --config-path="./config.yaml" --discord-bot-token-path="./token.txt"
+```
+
 ### Using docker-compose:
 ```yaml
 secrets:

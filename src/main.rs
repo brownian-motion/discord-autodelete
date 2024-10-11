@@ -113,7 +113,7 @@ async fn delete_old_messages(client: &Client, config: &Config, args: &Args) {
 
     let mut delete_routine = DeleteRoutine {
         getter: OldMessageController::new(client.http.clone()),
-        deleter: deleter,
+        deleter,
         namer: HttpNamer::new(client.http.clone()),
     };
     delete_routine.delete_old_messages(config).await;
