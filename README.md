@@ -6,9 +6,11 @@ This is useful for things like `#venting` channels, selfies, and anything sensit
 
 ## Goals
 - [ ] Configuration
-  - [x] Load delete config from a human-readable file on startup
-  - [ ] Write delete config to a file if updated using `/commands`
+  - [x] Load the "delete config" from a human-readable file on startup
+  - [ ] Write the "delete config" to a file if updated using `/commands`
   - [x] Load discord bot login tokens from a configured file
+  - [ ] Write the "delete config" to a file if updated using API endpoints by an authenticated user
+  - [ ] Back up the config file periodically, if changed
 - [x] Deleting
   - [x] Be able to fetch a list of posts in a channel older than the configured timeout
   - [x] Be able to delete all posts in a channel older than the configured timeout
@@ -21,6 +23,10 @@ This is useful for things like `#venting` channels, selfies, and anything sensit
   - [x] Have it poll periodically in a loop
   - [x] Use `docker` and `cron` to schedule this to run periodically
   - [x] Be able to edit the config externally without having to restart the container
+  - [ ] Restructure into a "scheduler" and "worker" architecture.
+      - Instead of doing all of the work in order on one global timer, have 1 scheduler process that schedules work for other workers on other threads to carry out.
+      - This would require a not-insignificant rewrite
+      - This would require computing a diff between what's scheduled and what the config says to schedule for
 - [ ] Nice-to-haves
   - [x] Anyone can technically host this
   - [x] Config files are bootstrapped into existence
