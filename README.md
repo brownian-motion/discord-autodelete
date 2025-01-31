@@ -35,7 +35,7 @@ This is useful for things like `#venting` channels, selfies, and anything sensit
   - [ ] Tests!
 
 ## License
-Licensed under GPL-3. Please feel free to copy and modify this, and host it yourself.
+Licensed under the [Affero GPL-3](https://en.wikipedia.org/wiki/GNU_Affero_General_Public_License). Please feel free to copy and modify this software, and host it yourself.
 
 ## Contributing
 Please open an issue or a pull request!
